@@ -3,14 +3,14 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Subir Imagen</title>
+  <title>Subida masiva de CSV</title>
 </head>
 
 <body>
   <form action="upload.php" method="post" enctype="multipart/form-data">
-    Selecciona la imagen a subir:
-    <input type="file" name="fileToUpload" id="fileToUpload">
-    <input type="submit" value="Subir Imagen" name="submit">
+    <label for="file">Selecciona el archivo CSV:</label>
+    <input type="file" name="file" id="file" accept=".csv">
+    <input type="submit" value="Subir CSV">
   </form>
 </body>
 

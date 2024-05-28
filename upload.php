@@ -1,65 +1,61 @@
 <?php
-include 'connection.php'; // Incluir el archivo de configuración de la base de datos
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "db_datosmasivos";
 
-// Ruta relativa a la carpeta 'imagenes' en la raíz del proyecto
-$target_dir = __DIR__ . "/img/";
-$target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
-$uploadOk = 1;
-$imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  // Verifica si el archivo fue subido sin errores
+  if (isset($_FILES["file"]) && $_FILES["file"]["error"] == 0) {
+    $file = $_FILES["file"]["tmp_name"];
 
-// Verificar si el archivo es una imagen real o un falso
-if (isset($_POST["submit"])) {
-  $check = getimagesize($_FILES["fileToUpload"]["tmp_name"]);
-  if ($check !== false) {
-    echo "El archivo es una imagen - " . $check["mime"] . ".";
-    $uploadOk = 1;
-  } else {
-    echo "El archivo no es una imagen.";
-    $uploadOk = 0;
-  }
-}
+    // Abre el archivo CSV
+    if (($handle = fopen($file, "r")) !== FALSE) {
+      // Conecta a la base de datos
+      $conn = new mysqli($servername, $username, $password, $dbname);
+      if ($conn->connect_error) {
+        die("Error de conexión: " . $conn->connect_error);
+      }
 
-// Verificar si el archivo ya existe
-if (file_exists($target_file)) {
-  echo "Lo siento, el archivo ya existe.";
-  $uploadOk = 0;
-}
+      // Comienza una transacción
+      $conn->begin_transaction();
 
-// Verificar el tamaño del archivo
-if ($_FILES["fileToUpload"]["size"] > 500000) {
-  echo "Lo siento, tu archivo es demasiado grande.";
-  $uploadOk = 0;
-}
+      try {
+        // Lee la primera línea para obtener los nombres de las columnas
+        $headers = fgetcsv($handle, 1000, ",", "\"");
 
-// Permitir ciertos formatos de archivo
-if (
-  $imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
-  && $imageFileType != "gif"
-) {
-  echo "Lo siento, solo se permiten archivos JPG, JPEG, PNG y GIF.";
-  $uploadOk = 0;
-}
+        // Procesa cada línea del CSV
+        while (($data = fgetcsv($handle, 1000, ",", "\"")) !== FALSE) {
+          // Prepara los datos para la inserción
+          $values = array_map(function ($value) use ($conn) {
+            return "'" . $conn->real_escape_string($value) . "'";
+          }, $data);
 
-// Verificar si $uploadOk es 0 por un error
-if ($uploadOk == 0) {
-  echo "Lo siento, tu archivo no fue subido.";
-  // Si todo está bien, intenta subir el archivo
-} else {
-  if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
-    echo "El archivo " . basename($_FILES["fileToUpload"]["name"]) . " ha sido subido.";
+          $sql = "INSERT INTO info (" . implode(",", $headers) . ") VALUES (" . implode(",", $values) . ")";
 
-    // Guardar la ruta relativa en la base de datos
-    $image_path = "img/" . basename($_FILES["fileToUpload"]["name"]);
-    $sql = "INSERT INTO imagenes (ruta) VALUES ('$image_path')";
+          if (!$conn->query($sql)) {
+            throw new Exception("Error al insertar datos: " . $conn->error);
+          }
+        }
 
-    if ($conn->query($sql) === TRUE) {
-      echo "La ruta de la imagen ha sido guardada en la base de datos.";
+        // Confirma la transacción
+        $conn->commit();
+
+        echo "Archivo CSV subido y datos insertados exitosamente.";
+      } catch (Exception $e) {
+        // En caso de error, revierte la transacción
+        $conn->rollback();
+        echo $e->getMessage();
+      }
+
+      // Cierra la conexión a la base de datos
+      $conn->close();
     } else {
-      echo "Error: " . $sql . "<br>" . $conn->error;
+      echo "Error al abrir el archivo.";
     }
   } else {
-    echo "Lo siento, hubo un error al subir tu archivo.";
+    echo "Error al subir el archivo.";
   }
+} else {
+  echo "Método de solicitud no válido.";
 }
-
-$conn->close();
