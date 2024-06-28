@@ -1,17 +1,53 @@
-<!DOCTYPE html>
-<html lang="es">
+<!doctype html>
+<html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <title>Subida masiva de CSV</title>
+  <title>EXCEL</title>
+  <!-- Required meta tags -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <!-- Bootstrap CSS v5.2.1 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
 </head>
 
 <body>
-  <form action="upload.php" method="post" enctype="multipart/form-data">
-    <label for="file">Selecciona el archivo CSV:</label>
-    <input type="file" name="file" id="file" accept=".csv">
-    <input type="submit" value="Subir CSV">
-  </form>
+  <button type="button" class="btn btn-outline-primary" onclick="descargar()">
+    Descargar
+  </button>
+
+  <footer>
+    <!-- place footer here -->
+  </footer>
+  <!-- Bootstrap JavaScript Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
 </body>
 
 </html>
+<script>
+  function descargar() {
+    // Crear un array con los datos del archivo CSV
+    var csv = [
+      ['Nombre', 'Apellido', 'Edad'],
+      ['Juan', 'Pérez', 30],
+      ['María', 'Gómez', 25],
+      ['Carlos', 'López', 35]
+    ];
+    // Pasara ese array en formato CSV
+    var csvContent = 'data:text/csv;charset=utf-8,';
+    csv.forEach(function(rowArray) {
+      var row = rowArray.join(',');
+      csvContent += row + '\r\n';
+    });
+    // Crear un enlace para descargar el archivo CSV
+    var encodedUri = encodeURI(csvContent);
+    var link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'archivo.csv');
+    document.body.appendChild(link);
+    link.click();
+
+  }
+</script>
