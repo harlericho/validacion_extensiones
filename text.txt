@@ -1,0 +1,19 @@
+function AgregarCampoListaSQL($sNNomC, $sNDes, $sNSQL, $bNReq, $nNTam, $valorPorDefecto = null) {
+    $this->NuevoCampo($sNNomC);
+    $this->cCampos[$sNNomC]->AgregarCampo($sNNomC, $sNDes, 0, $bNReq, $sNSQL, 'selectSQL', $nNTam, $valorPorDefecto);
+}
+
+function AgregarCampo($sNNomC, $sNDes, $tipo, $bNReq, $sNSQL, $tipoCampo, $nNTam, $valorPorDefecto = null) {
+    // Aquí asumo que estás ejecutando la consulta SQL
+    $resultado = ejecutarConsultaSQL($sNSQL); // Función que ejecuta la consulta SQL
+    
+    echo '<select name="' . $sNNomC . '">';
+    
+    while ($fila = obtenerFila($resultado)) {  // obtenerFila es tu método para recorrer los resultados
+        $selected = ($fila['codtab'] == $valorPorDefecto) ? 'selected' : '';
+        echo '<option value="' . $fila['codtab'] . '" ' . $selected . '>' . $fila['nomtab'] . '</option>';
+    }
+    
+    echo '</select>';
+}
+$ConfigCampos->AgregarCampoListaSQL('novend30', 'VENDEDOR', "SELECT codtab, nomtab FROM maetab WHERE numtab='63' AND codtab<>'' ORDER BY nomtab", true, 'auto', 'valor_predeterminado');
